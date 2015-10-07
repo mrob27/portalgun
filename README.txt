@@ -14,8 +14,8 @@ throw something into a portal)
 
 LICENSE
 
-  Creative Commons Attribution 3.0 Unported (CC-BY-3.0)
-  See creativecommons.org/licenses/by/3.0 for details
+  Creative Commons Attribution Sharealike 3.0 Unported (CC-BY-SA-3.0)
+  See creativecommons.org/licenses/by-sa/3.0 for details
 
 HOW TO INSTALL THIS MOD:
   1. Find your minetest folder, and create it if there isn't one yet (like if this is your first time installing a mod)
