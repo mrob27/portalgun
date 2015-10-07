@@ -1,8 +1,21 @@
 portalgun
+
+                   The portal gun that shoots portals,
+            which I guess is why they call it a portal gun :D
+
+ Portals teleport the player, mobs and dropped objects (use 'Q' to
+throw something into a portal)
+
+
   Originally by UjEdwin (Ver 0.5)
     Posted to forums at forum.minetest.net/viewtopic.php?f=9&t=12772
     on 2015 July 9th
   Heavily modified by Robert Munafo (mrob27)
+
+LICENSE
+
+  Creative Commons Attribution 3.0 Unported (CC-BY-3.0)
+  See creativecommons.org/licenses/by/3.0 for details
 
 HOW TO INSTALL THIS MOD:
   1. Find your minetest folder, and create it if there isn't one yet (like if this is your first time installing a mod)
@@ -27,6 +40,30 @@ still missing functions :)
  20151006 mrob27: Reformat everything (spaces, tabs, indentation,
 etc.). Use right-click for shooting orange portals. You can now only
 shoot portals onto steel blocks.
+
+TODO
+ Extra portals get created sometimes, possibly because of mishandling
+of nxt_id and failure to deal with entity deactivation/reactivation
+
+ Portals become "dark" when their position is inside a node. The
+proper fix here is to use better checks for deciding which way portal
+should face.
+
+ Portals are invisible when seen from behind, even though they still
+work.
+
+ Set player's velocity appropriately when exiting portal. On the
+forums, Hybrid Dog suggested
+(forum.minetest.net/viewtopic.php?f=9&t=12772#p184677) this can be
+done by creating an invisible, nonpointable entity (we'd need one per
+player) and doing set_attach on it (similarly to how boats work), then
+set the object's velocity, and then do a set_detach in a
+minetest.after callback to release the player after the engine has
+effected the velocity change. But actual experiments with the boat mod
+seem to indicate this won't work: the player's velocity returns to 0
+as soon as they are detached. So they would need to remain attached as
+long as they're still airborne, using a globalstep to detect when the
+invisible carrier hits something.
 
 HOW TO PLAY:
  At present the only way to get a portal gun is to play Creative mode

@@ -200,7 +200,9 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 	local pos = pointed_thing.under
 	local node = node_ok(pos)
 	local nn = node.name
-	if not string.find(nn, "default:steel") then
+
+	-- NOTE: We might also want to exclude certain node types (e.g. steps, fence, trapdoors, etc)
+	if (not node.walkable) then
 		return itemstack
 	end
 
