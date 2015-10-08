@@ -40,13 +40,17 @@ still missing functions :)
  20151006 mrob27: Reformat everything (spaces, tabs, indentation,
 etc.). Use right-click for shooting orange portals. You can now only
 shoot portals onto steel blocks.
+ 20151007 Clean up the code, add more comments
+
 
 TODO
  Extra portals get created sometimes, possibly because of mishandling
-of nxt_id and failure to deal with entity deactivation/reactivation
+of nxt_id and failure to deal with entity deactivation/reactivation.
+It can be handled by having the portalgun_portals table indexed by
+player name rather than repeatedly incrementing nxt_id
 
  Portals become "dark" when their position is inside a node. The
-proper fix here is to use better checks for deciding which way portal
+proper fix here is to use better checks for deciding which way a portal
 should face.
 
  Portals are invisible when seen from behind, even though they still
