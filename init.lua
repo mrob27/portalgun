@@ -331,6 +331,10 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 
 	portalgun_running = true
 	nxt_id = portalgun_getLength(portalgun_portals)
+
+	-- we scan away from the player to find out what they hit. we need to
+	-- start 1.5 blocks above the player's location because the gun is
+	-- being held about that far above the player's feet.
 	pos.y = pos.y+1.5
 
 	-- the project
@@ -380,7 +384,9 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 				end
 			end
 --			print ("[portalgun] created #"..id.." p"..pnum.." for "..uname)
-			-- minetest.sound_play("portalgun_open", {pos=pos})
+			if not remove then
+				minetest.sound_play("portalgun_shoot", {pos=pos})
+			end
 			return itemstack
 		end
 	end

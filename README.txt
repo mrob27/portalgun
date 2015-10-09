@@ -49,6 +49,9 @@ still missing functions :)
 etc.). Use right-click for shooting orange portals. You can now only
 shoot portals onto steel blocks.
  20151007 Clean up the code, add more comments
+ 20151008 More code cleanup; start adding staticdata for the portal
+entities so they can be properly reactivated after the player wanders
+away and back.
 
 
 TODO
@@ -86,3 +89,18 @@ and get one in the inventory screen, or give one to yourself using
  shift+left-click to close both portals
  Portals may only be anchored on steel blocks (which sort of look like
 the walls of the Aperture Science test chambers)
+
+NOTES
+
+To create the "portalgun_shoot" sound effect I started with the file
+"Laser_Cannon-Mike_Koenig-797224747.mp3" from
+soundbible.com/tags-ray-gun.html, and renamed it to just
+"797224747.mp3". Then I split off just the latter part of the sound
+with the mp3splt utility:
+
+   mp3splt 797224747.mp3 0.00.00 0.00.50 600.00.00
+
+Then converted to OGG format with ffmpeg (also adjusting volume):
+
+   ffmpeg -y -i 797224747_00m_00s_50h__00m_01s_99h.mp3 \
+     -af volume=0.5 -codec:a libvorbis portalgun_shoot.ogg
