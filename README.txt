@@ -17,6 +17,14 @@ LICENSE
   Creative Commons Attribution Sharealike 3.0 Unported (CC-BY-SA-3.0)
   See creativecommons.org/licenses/by-sa/3.0 for details
 
+  Details of individual components
+
+  sound effects are clipped from the following original files, which
+are from soundbible.com/tags-ray-gun.html, and licensed as CC-BY-3.0
+    Laser_Cannon-Mike_Koenig-797224747.mp3
+    Power_Up_Ray-Mike_Koenig-800933783.mp3
+
+
 HOW TO INSTALL THIS MOD:
   1. Find your minetest folder, and create it if there isn't one yet (like if this is your first time installing a mod)
     Linux: It depends on what type of install you did.
