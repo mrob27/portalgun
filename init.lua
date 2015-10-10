@@ -1,5 +1,7 @@
 -- Code by UjEdwin and mrob27
 -- License, revision history and instructions are in README.txt
+--
+-- Design documentation is also in README.txt
 
 local op_prtl = {}
 local id_p0rtal = {}

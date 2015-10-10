@@ -40,6 +40,25 @@ HOW TO INSTALL THIS MOD:
   3. Make a folder inside your "mods" folder called "portalgun". All the portalgun files go in that folder.
 
 
+DESIGN
+
+The main effect of this mod is to create game entitites (via
+#minetest.env:add_entity()#) for the orange and blue "portals", and
+detect the proximity of other entities to the portals so that those
+objects can be teleported.
+   Entities "live" on the server, and are unloaded ("deactivated") by
+the engine when all players walk far enough away to allow it. When a
+player walks back into the proximity of a portal, the entity is
+reactivated by the server, and we have to restore the portal's colour
+and orientation (which direction it is facing); we also need to
+remember where this portal links, and who it belongs to.
+   This extra information can be stored in staticdata of the entity
+and restored in the normal way (deserialise/serialise within the
+on_activate and get_staticdata functions) but we cannot count on the
+entity being active when we need the data. So we also keep all
+the needed information in the op_prtl[] table.
+
+
 REVISION HISTORY
  20150709 UjEdwin: Version 0.5. This is not a complitle version, so
 still missing functions :)
@@ -56,7 +75,7 @@ away and back.
 old portalgun_portals table)
 
 
-TODO
+TODO - BUG FIXES
  Extra portals get created sometimes, possibly because of mishandling
 of nxt_id and failure to deal with entity deactivation/reactivation.
 It can be handled by having the portalgun_portals table indexed by
@@ -81,6 +100,17 @@ seem to indicate this won't work: the player's velocity returns to 0
 as soon as they are detached. So they would need to remain attached as
 long as they're still airborne, using a globalstep to detect when the
 invisible carrier hits something.
+
+TODO - COSMETIC
+
+In the original, the gun glows blue or orange according to what colour
+portal you just placed.
+
+In the original, a portal that goes nowhere is filled in with its
+colour.
+
+In the original, the portalgun also functions as a gravity gun (as
+seen in Half-Life) but with very limited launching range.
 
 HOW TO PLAY:
  At present the only way to get a portal gun is to play Creative mode
