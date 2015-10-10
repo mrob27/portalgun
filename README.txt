@@ -52,6 +52,8 @@ shoot portals onto steel blocks.
  20151008 More code cleanup; start adding staticdata for the portal
 entities so they can be properly reactivated after the player wanders
 away and back.
+ 20151009 More refactoring (added op_prtl table which will replace the
+old portalgun_portals table)
 
 
 TODO

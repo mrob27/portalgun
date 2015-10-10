@@ -1,7 +1,8 @@
 -- Code by UjEdwin and mrob27
 -- License, revision history and instructions are in README.txt
 
-local portalgun_portals={}
+local op_prtl = {}
+local id_p0rtal = {}
 local nxt_id = 0 -- this counts how many portalpairs have been created; TODO: this will go away
 local portalgun_step_interval = 0.1
 local portalgun_time=0
@@ -36,9 +37,9 @@ minetest.register_on_leaveplayer(
 	-- when a player leaves the game, make their portals expire
 	function(user)
 		local uname = user:get_player_name()
-		for i=1, portalgun_getLength(portalgun_portals),1 do
-			if portalgun_portals[i]~=0 and portalgun_portals[i].user==uname then
-				portalgun_portals[i].lifetime=-1
+		for i=1, portalgun_getLength(id_p0rtal),1 do
+			if id_p0rtal[i]~=0 and id_p0rtal[i].user==uname then
+				id_p0rtal[i].lifetime=-1
 				return 0
 			end
 		end
@@ -48,22 +49,22 @@ minetest.register_on_leaveplayer(
 -- step function or an individual portal: checks if there are things to
 -- teleport
 local function portalgun_step_proc(portal, id)
-	if portalgun_portals[id] == 0 then
+	if id_p0rtal[id] == 0 then
 		return 0
 	end
 	-- print ("[portalgun] sproc(" .. portal .. ", " .. id  .. ")")
 
 	-- check if portals have run out of lifetime. (If they are used, by
 	-- an object getting teleported, the timer is reset, see below)
-	portalgun_portals[id].lifetime = portalgun_portals[id].lifetime-1
-	if portalgun_portals[id].lifetime < 0 then
-		if portalgun_portals[id].portal1 ~= 0 then
-			portalgun_portals[id].portal1:remove()
+	id_p0rtal[id].lifetime = id_p0rtal[id].lifetime-1
+	if id_p0rtal[id].lifetime < 0 then
+		if id_p0rtal[id].portal1 ~= 0 then
+			id_p0rtal[id].portal1:remove()
 		end
-		if portalgun_portals[id].portal2 ~= 0 then
-			portalgun_portals[id].portal2:remove()
+		if id_p0rtal[id].portal2 ~= 0 then
+			id_p0rtal[id].portal2:remove()
 		end
-		portalgun_portals[id] = 0
+		id_p0rtal[id] = 0
 		return 0
 	end
 
@@ -74,15 +75,15 @@ local function portalgun_step_proc(portal, id)
 	local d1 = 0
 	local d2 = 0
 	if portal == 1 then
-		pos1 = portalgun_portals[id].portal1_pos
-		pos2 = portalgun_portals[id].portal2_pos
-		d1 = portalgun_portals[id].portal1_dir
-		d2 = portalgun_portals[id].portal2_dir
+		pos1 = id_p0rtal[id].portal1_pos
+		pos2 = id_p0rtal[id].portal2_pos
+		d1 = id_p0rtal[id].portal1_dir
+		d2 = id_p0rtal[id].portal2_dir
 	else
-		pos1 = portalgun_portals[id].portal2_pos
-		pos2 = portalgun_portals[id].portal1_pos
-		d1 = portalgun_portals[id].portal2_dir
-		d2 = portalgun_portals[id].portal1_dir
+		pos1 = id_p0rtal[id].portal2_pos
+		pos2 = id_p0rtal[id].portal1_pos
+		d1 = id_p0rtal[id].portal2_dir
+		d2 = id_p0rtal[id].portal1_dir
 	end
 
 
@@ -145,7 +146,7 @@ local function portalgun_step_proc(portal, id)
 
 				-- this portal has been used, so we should reset the
 				-- portal's expiration timer
-				portalgun_portals[id].lifetime = portalgun_lifetime
+				id_p0rtal[id].lifetime = portalgun_lifetime
 
 				-- ======= end of set velocity part then teleport
 			end
@@ -172,12 +173,12 @@ minetest.register_globalstep(
 		portalgun_time=0
 		local use=0
 
-		for i=1, portalgun_getLength(portalgun_portals),1 do
+		for i=1, portalgun_getLength(id_p0rtal),1 do
 			use = use + portalgun_step_proc(1, i)
 			use = use + portalgun_step_proc(2, i)
 		end
-		if (use == 0) and (portalgun_getLength(portalgun_portals) > 0) then
-			portalgun_portals = {}
+		if (use == 0) and (portalgun_getLength(id_p0rtal) > 0) then
+			id_p0rtal = {}
 			portalgun_running = false
 		end
 	end
@@ -220,22 +221,22 @@ minetest.register_entity("portalgun:portal", {		-- the portals
 		-- a portal entity is being loaded into the environment because
 		-- a player is nearby
 		self.id = nxt_id
-		if not portalgun_portals[self.id] then
+		if not id_p0rtal[self.id] then
 --			print "[portalgun] not in pg_p table, removing."
 			self.object:remove()
 			return
 		end
 		local d=""
 		local prj = 0
-		if portalgun_portals[self.id].project then
-			prj = portalgun_portals[self.id].project
+		if id_p0rtal[self.id].project then
+			prj = id_p0rtal[self.id].project
 		end
 --		print ("[portalgun] id now "..self.id..", project="..prj)
 		if prj==1 then
-			d=portalgun_portals[self.id].portal1_dir
+			d=id_p0rtal[self.id].portal1_dir
 			self.object:set_properties({textures = {"portalgun_blue.png"},})
 		else
-			d=portalgun_portals[self.id].portal2_dir
+			d=id_p0rtal[self.id].portal2_dir
 			self.object:set_properties({textures = {"portalgun_orange.png"},})
 		end
 
@@ -284,7 +285,7 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 	local dir = user:get_look_dir() -- unit vector
 	local uname = user:get_player_name()
 	local found = false
-	local len = portalgun_getLength(portalgun_portals)
+	local len = portalgun_getLength(id_p0rtal)
 
 	-- in my mods is as default I set   0 or false   in a array when not
 	-- using anymore, then clear the array when not used, that saves much.
@@ -292,14 +293,14 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 	-- this check if you can hold shift+leftclick to clear your user-portals,
 	-- lifetime=0 means the portals will die to next run.
 	for i=1, len,1 do
-		if portalgun_portals[i]~=0
-			and portalgun_portals[i]~=nil
-			and portalgun_portals[i].user==uname
+		if id_p0rtal[i]~=0
+			and id_p0rtal[i]~=nil
+			and id_p0rtal[i].user==uname
 		then
 			if not RMB then
 				-- left mouse button
 				if remove then
-					portalgun_portals[i].lifetime=0
+					id_p0rtal[i].lifetime=0
 					return itemstack
 				end
 			end
@@ -325,12 +326,12 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 		ob.portal1_pos=0
 		ob.user = uname
 
-		table.insert(portalgun_portals, ob)
+		table.insert(id_p0rtal, ob)
 		nxt_id = len+1
 	end
 
 	portalgun_running = true
-	nxt_id = portalgun_getLength(portalgun_portals)
+	nxt_id = portalgun_getLength(id_p0rtal)
 
 	-- we scan away from the player to find out what they hit. we need to
 	-- start 1.5 blocks above the player's location because the gun is
@@ -341,8 +342,10 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 	for i = 1, (portalgun_max_range+1), 1 do
 		if minetest.get_node({x=pos.x+(dir.x*i), y=pos.y+(dir.y*i), z=pos.z+(dir.z*i)}).name~="air" then
 			local id = nxt_id
-			if portalgun_portals[id]==0 then return itemstack end
-			portalgun_portals[id].lifelim=portalgun_lifetime
+			if id_p0rtal[id]==0 then
+				return itemstack
+			end
+			id_p0rtal[id].lifelim=portalgun_lifetime
 			local lpos={x=pos.x+(dir.x*(i-1)), y=pos.y+(dir.y*(i-1)), z=pos.z+(dir.z*(i-1))}
 			local cpos={x=pos.x+(dir.x*i), y=pos.y+(dir.y*i), z=pos.z+(dir.z*i)}
 			local x=math.floor((lpos.x-cpos.x)+ 0.5)
@@ -361,19 +364,19 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 
 			local obj = 0
 			if RMB then
-				portalgun_portals[id].project=2
-				portalgun_portals[id].portal2_dir=portal_dir
-				portalgun_portals[id].portal2_pos=cpos
-				if portalgun_portals[id].portal2~=0 then portalgun_portals[id].portal2:remove() end
+				id_p0rtal[id].project=2
+				id_p0rtal[id].portal2_dir=portal_dir
+				id_p0rtal[id].portal2_pos=cpos
+				if id_p0rtal[id].portal2~=0 then id_p0rtal[id].portal2:remove() end
 				obj = minetest.env:add_entity(cpos, "portalgun:portal")
-				portalgun_portals[id].portal2 = obj
+				id_p0rtal[id].portal2 = obj
 			else
-				portalgun_portals[id].project=1
-				portalgun_portals[id].portal1_dir=portal_dir
-				portalgun_portals[id].portal1_pos=cpos
-				if portalgun_portals[id].portal1~=0 then portalgun_portals[id].portal1:remove() end
+				id_p0rtal[id].project=1
+				id_p0rtal[id].portal1_dir=portal_dir
+				id_p0rtal[id].portal1_pos=cpos
+				if id_p0rtal[id].portal1~=0 then id_p0rtal[id].portal1:remove() end
 				obj = minetest.env:add_entity(cpos, "portalgun:portal")
-				portalgun_portals[id].portal1 = obj
+				id_p0rtal[id].portal1 = obj
 			end
 			if obj then
 				local ent = obj:get_luaentity()
@@ -383,6 +386,23 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 					ent.id = id
 				end
 			end
+
+			local op = uname
+			if RMB then
+				op = op .. "2"
+			else
+				op = op .. "1"
+			end
+			if (not op_prtl[op]) or (op_prtl[op] == 0) then
+				op_prtl[op] = {}
+			end
+			op_prtl[op].pnum = pnum
+			op_prtl[op].portal = portal
+			op_prtl[op].owner = uname
+			op_prtl[op].pos = cpos
+			op_prtl[op].dir = portal_dir
+			
+
 --			print ("[portalgun] created #"..id.." p"..pnum.." for "..uname)
 			if not remove then
 				minetest.sound_play("portalgun_shoot", {pos=pos})
