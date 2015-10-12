@@ -94,7 +94,8 @@ local function portalgun_step_proc(portal, id)
 		-- check all objects within a radius of 1.5 (it has to be this big
 		-- to catch players, whose "position" is a point near the feet)
 		for ii, ob in pairs(minetest.get_objects_inside_radius(pos1, 1.5)) do
-			if ob:get_luaentity() and ob:get_luaentity().name=="portalgun:portal" then
+			local ent = ob:get_luaentity()
+			if ent and ent.name=="portalgun:portal" then
 				-- this object is the portal itself; ignore
 			else
 				-- ======= set velocity then teleport
@@ -103,7 +104,13 @@ local function portalgun_step_proc(portal, id)
 				local y=0
 				local z=0
 
-				if ob:is_player()==false then
+				if ob:is_player() then
+					if d2=="x+" then ob:set_look_yaw(math.pi/-2)
+					elseif d2=="x-" then ob:set_look_yaw(math.pi/2)
+					elseif d2=="z+" then ob:set_look_yaw(0)
+					elseif d2=="z-" then ob:set_look_yaw(math.pi)
+					end
+				else
 					-- get object's current velocity.
 					local v=ob:getvelocity() 
 
@@ -122,12 +129,19 @@ local function portalgun_step_proc(portal, id)
 					v.x = 0
 					v.y = 0
 					v.z = 0
-					if d2=="x+" then v.x=vmag
-					elseif d2=="x-" then v.x=vmag*-1
-					elseif d2=="y+" then v.y=vmag
-					elseif d2=="y-" then v.y=vmag*-1
-					elseif d2=="z+" then v.z=vmag
-					elseif d2=="z-" then v.z=vmag*-1 end
+					if d2=="x+" then
+						v.x=vmag
+					elseif d2=="x-" then
+						v.x=vmag*-1
+					elseif d2=="y+" then
+						v.y=vmag
+					elseif d2=="y-" then
+						v.y=vmag*-1
+					elseif d2=="z+" then
+						v.z=vmag
+					elseif d2=="z-" then
+						v.z=vmag*-1
+					end
 
 					ob:setvelocity({x=v.x, y=v.y, z=v.z})
 				end
@@ -357,26 +371,43 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 
 			-- the rotation & poss of the portals 
 
-			if x>0 then portal_dir="x+" cpos.x=(math.floor(cpos.x+ 0.5))+0.504 end 
-			if x<0 then portal_dir="x-" cpos.x=(math.floor(cpos.x+ 0.5))-0.504 end
-			if y>0 then portal_dir="y+"  cpos.y=(math.floor(cpos.y+ 0.5))+0.504 end
-			if y<0 then portal_dir="y-" cpos.y=(math.floor(cpos.y+ 0.5))-0.504 end
-			if z>0 then portal_dir="z+" cpos.z=(math.floor(cpos.z+ 0.5))+0.504 end
-			if z<0 then portal_dir="z-" cpos.z=(math.floor(cpos.z+ 0.5))-0.504 end
+			if x>0 then
+				portal_dir="x+"
+				cpos.x=(math.floor(cpos.x+ 0.5))+0.504
+			elseif x<0 then
+				portal_dir="x-"
+				cpos.x=(math.floor(cpos.x+ 0.5))-0.504
+			elseif y>0 then
+				portal_dir="y+"
+				cpos.y=(math.floor(cpos.y+ 0.5))+0.504
+			elseif y<0 then
+				portal_dir="y-"
+				cpos.y=(math.floor(cpos.y+ 0.5))-0.504
+			elseif z>0 then
+				portal_dir="z+"
+				cpos.z=(math.floor(cpos.z+ 0.5))+0.504
+			elseif z<0 then
+				portal_dir="z-"
+				cpos.z=(math.floor(cpos.z+ 0.5))-0.504
+			end
 
 			local obj = 0
 			if RMB then
 				id_p0rtal[id].project=2
 				id_p0rtal[id].portal2_dir=portal_dir
 				id_p0rtal[id].portal2_pos=cpos
-				if id_p0rtal[id].portal2~=0 then id_p0rtal[id].portal2:remove() end
+				if id_p0rtal[id].portal2~=0 then
+					id_p0rtal[id].portal2:remove()
+				end
 				obj = minetest.env:add_entity(cpos, "portalgun:portal")
 				id_p0rtal[id].portal2 = obj
 			else
 				id_p0rtal[id].project=1
 				id_p0rtal[id].portal1_dir=portal_dir
 				id_p0rtal[id].portal1_pos=cpos
-				if id_p0rtal[id].portal1~=0 then id_p0rtal[id].portal1:remove() end
+				if id_p0rtal[id].portal1~=0 then
+					id_p0rtal[id].portal1:remove()
+				end
 				obj = minetest.env:add_entity(cpos, "portalgun:portal")
 				id_p0rtal[id].portal1 = obj
 			end

@@ -73,6 +73,9 @@ entities so they can be properly reactivated after the player wanders
 away and back.
  20151009 More refactoring (added op_prtl table which will replace the
 old portalgun_portals table)
+ 20151011 When a player is teleported and the exit portal points x+,
+x-, z+ or z-, we now set their look direction appropriately so they
+have their back to the portal they just emerged from.
 
 
 TODO - BUG FIXES
@@ -88,18 +91,25 @@ should face.
  Portals are invisible when seen from behind, even though they still
 work.
 
+ Set yaw appropriately (using setyaw) for non-player entities
+similarly to how I present do set_look_yaw for players. Mobs like rats
+and sheep will look more realistic if they emerge head-first from the
+portal. As with the player, if the exit portal faces y+ or y-, yaw
+should remain unchanged.
+
  Set player's velocity appropriately when exiting portal. On the
 forums, Hybrid Dog suggested
 (forum.minetest.net/viewtopic.php?f=9&t=12772#p184677) this can be
 done by creating an invisible, nonpointable entity (we'd need one per
 player) and doing set_attach on it (similarly to how boats work), then
-set the object's velocity, and then do a set_detach in a
-minetest.after callback to release the player after the engine has
-effected the velocity change. But actual experiments with the boat mod
-seem to indicate this won't work: the player's velocity returns to 0
-as soon as they are detached. So they would need to remain attached as
-long as they're still airborne, using a globalstep to detect when the
-invisible carrier hits something.
+set the object's velocity and acceleration, and then do a set_detach
+in a minetest.after callback to release the player after the engine
+has effected the velocity change. But actual experiments with the boat
+mod seem to indicate this won't work: the player's velocity returns to
+0 as soon as they are detached. So they would need to remain attached
+as long as they're still airborne, using a globalstep to detect when
+the invisible carrier hits something (e.g. any change to x or z
+component of velocity).
 
 TODO - COSMETIC
 
