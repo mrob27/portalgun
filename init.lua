@@ -35,6 +35,68 @@ local function node_ok(pos)
     return minetest.registered_nodes[fallback]
 end
 
+-- try to figure out the object's physical height. There are
+-- several cases that need to be handled. Not all objects
+-- have a collisionbox
+local function object_height(ob)
+	if ob:is_player() then
+		-- We assume players have a height of 1.8 metres
+		print "object_height: is player, returning 1.8"
+		return 1.8
+	end
+
+	local ent = ob:get_luaentity()
+	if ent then
+		local cb = ent.collisionbox;
+		if cb then
+			-- We got lucky, an object whose entity actually defines a
+			-- collisionbox! The height is in cb[5]
+			print("object_height: cb ("..cb[1]..", "..cb[2]..", "..cb[3]
+							..", "..cb[4]..", "..cb[5]..", "..cb[6]..")")
+			return cb[5]
+		elseif ent.name=="__builtin:item" then
+			local iname = ItemStack(ent.itemstring):get_name()
+			print("object_height: dropped obj '"..ent.itemstring
+				.."', iname '"..iname.."'")
+			cb = minetest.registered_entities[ent.name].collisionbox
+			if cb == nil then
+				cb = minetest.registered_items[iname].collisionbox
+			end
+			if cb then
+				-- This seems to never happen
+				print("  found cb ("..cb[1]..", "..cb[2]..", "..cb[3]
+					..", "..cb[4]..", "..cb[5]..", "..cb[6]..")")
+				return cb[5]
+			else
+				-- Try to get the visual attribute, but it is never available
+				local vs = minetest.registered_entities[ent.name].visual
+				print("  no cb, visual '"..minetest.serialize(vs).."'")
+				-- TODO: Can we test what version of the Minetest engine
+				-- we're in? The size of __builtin:item objects changed,
+				-- look in game/item_entity.lua for a call to register_entity
+				-- it used to be about 0.33 and is presently 0.6
+				return 0.6
+			end
+		else
+			print("object_height: entity '"..ent.name.."'")
+			cb = minetest.registered_entities[ent.name].collisionbox
+			if cb then
+				-- This seems to never happen
+				print("  found cb ("..cb[1]..", "..cb[2]..", "..cb[3]
+					..", "..cb[4]..", "..cb[5]..", "..cb[6]..")")
+				return cb[5]
+			else
+				print("  no cb, assume small")
+			end
+		end
+	else
+		-- we couldn't get a laentity
+	end
+
+	-- if we get here we couldn't figure it out at all.
+	return 0.1
+end
+
 minetest.register_on_leaveplayer(
 	-- when a player leaves the game, make their portals expire
 	function(user)
@@ -95,33 +157,33 @@ local function portalgun_step_proc(portal, id)
 		-- to catch players, whose "position" is a point near the feet)
 		for ii, ob in pairs(minetest.get_objects_inside_radius(pos1, 1.5)) do
 			local ent = ob:get_luaentity()
-			if ent and ent.name=="portalgun:portal" then
+
+			-- TODO: use object height to get a more refined sense of the
+			-- object's true distance from the portal, and ignore if object
+			-- is not within a closer radius
+			-- local height = object_height(ob)
+
+			if ent and ent.name == "portalgun:portal" then
 				-- this object is the portal itself; ignore
 			else
 				-- ======= set velocity then teleport
-				local p=pos2
-				local x=0
-				local y=0
-				local z=0
+				local p = pos2
+				local x = 0
+				local y = 0
+				local z = 0
 
 				if ob:is_player() then
-					if d2=="x+" then ob:set_look_yaw(math.pi/-2)
-					elseif d2=="x-" then ob:set_look_yaw(math.pi/2)
-					elseif d2=="z+" then ob:set_look_yaw(0)
-					elseif d2=="z-" then ob:set_look_yaw(math.pi)
+					if d2 == "x+" then ob:set_look_yaw(math.pi/-2)
+					elseif d2 == "x-" then ob:set_look_yaw(math.pi/2)
+					elseif d2 == "z+" then ob:set_look_yaw(0)
+					elseif d2 == "z-" then ob:set_look_yaw(math.pi)
 					end
 				else
 					-- get object's current velocity.
-					local v=ob:getvelocity() 
+					local v = ob:getvelocity() 
 
 					-- compute the magnitude of the velocity
 					local vmag = math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z)
-					-- if v.x<0 then v.x=v.x*-1 end
-					-- if v.y<0 then v.y=v.y*-1 end
-					-- if v.z<0 then v.z=v.z*-1 end
-					-- local vmag=0 -- get the biggest velocity
-					-- if v.x>v.z then vmag=v.x else vmag=v.z end
-					-- if vmag<v.y then vmag=v.y end
 
 					-- compute exit velocity. Objects always exit in a
 					-- direction perpendicular to the exit portal, with
@@ -129,36 +191,42 @@ local function portalgun_step_proc(portal, id)
 					v.x = 0
 					v.y = 0
 					v.z = 0
-					if d2=="x+" then
-						v.x=vmag
-					elseif d2=="x-" then
-						v.x=vmag*-1
-					elseif d2=="y+" then
-						v.y=vmag
-					elseif d2=="y-" then
-						v.y=vmag*-1
-					elseif d2=="z+" then
-						v.z=vmag
-					elseif d2=="z-" then
-						v.z=vmag*-1
+					if d2 == "x+" then
+						v.x = vmag
+						ob:setyaw(math.pi/-2)
+					elseif d2 == "x-" then
+						v.x = vmag*-1
+						ob:setyaw(math.pi/2)
+					elseif d2 == "y+" then
+						v.y = vmag
+					elseif d2 == "y-" then
+						v.y = vmag*-1
+					elseif d2 == "z+" then
+						v.z = vmag
+						ob:setyaw(0)
+					elseif d2 == "z-" then
+						v.z = vmag*-1
+						ob:setyaw(math.pi)
 					end
 
-					ob:setvelocity({x=v.x, y=v.y, z=v.z})
+					ob:setvelocity({x = v.x, y = v.y, z = v.z})
 				end
 
 				-- Calculate exit point, 2 nodes away from the exit portal
 				-- in whatever direction the exit portal is facing. It has
 				-- to be 2 nodes away so we don't immediately get
 				-- teleported again.
-				if d2=="x+" then x=2
-				elseif d2=="x-" then x=-2
-				elseif d2=="y+" then y=2
-				elseif d2=="y-" then y=-2
-				elseif d2=="z+" then z=2
-				elseif d2=="z-" then z=-2
+				-- TODO: Once we manage to decrease the capture radius of 1.5,
+				-- we may also diminish this distance.
+				if d2 == "x+" then x = 2
+				elseif d2 == "x-" then x = -2
+				elseif d2 == "y+" then y = 2
+				elseif d2 == "y-" then y = -2
+				elseif d2 == "z+" then z = 2
+				elseif d2 == "z-" then z = -2
 				end
 
-				ob:moveto({x=p.x+x,y=p.y+y,z=p.z+z},false)
+				ob:moveto({x = p.x+x, y = p.y+y, z = p.z+z}, false)
 
 				-- this portal has been used, so we should reset the
 				-- portal's expiration timer
@@ -412,6 +480,7 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 				id_p0rtal[id].portal1 = obj
 			end
 			if obj then
+				-- fill in its staticdata
 				local ent = obj:get_luaentity()
 				if ent then
 					ent.owner = uname
@@ -430,7 +499,7 @@ local function portal_useproc(itemstack, user, pointed_thing, RMB, remove)
 				op_prtl[op] = {}
 			end
 			op_prtl[op].pnum = pnum
-			op_prtl[op].portal = portal
+			op_prtl[op].portal = obj
 			op_prtl[op].owner = uname
 			op_prtl[op].pos = cpos
 			op_prtl[op].dir = portal_dir

@@ -76,6 +76,7 @@ old portalgun_portals table)
  20151011 When a player is teleported and the exit portal points x+,
 x-, z+ or z-, we now set their look direction appropriately so they
 have their back to the portal they just emerged from.
+ 20151012 Set yaw of non-player entities as they emerge from a portal
 
 
 TODO - BUG FIXES
